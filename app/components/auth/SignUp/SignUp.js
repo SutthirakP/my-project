@@ -10,16 +10,43 @@ const signUpSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters long'),
 });
 
-const SignUp = ({ onSignInClick }) => {
+const SignUp = ({ onSignInClick = () => {} }) => {
   // React Hook Form setup with Zod validation
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(signUpSchema),
   });
 
-  const handleSignUpSubmit = (data) => {
-    console.log(data);
-    // Handle the sign-up logic here
+  const handleSignUpSubmit = async (data) => {
+    try {
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      
+      if (response.ok) {
+        alert('Sign-up successful!');
+        onSignInClick(); // Navigate to Sign-In form
+      } else {
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const errorData = await response.json();
+          alert(`Sign-up failed: ${errorData.message}`);
+        } else {
+          const errorText = await response.text();
+          console.error('Unexpected response:', errorText);
+          alert('Sign-up failed: Unexpected response from server');
+        }
+      }
+    } catch (error) {
+      console.error('Client error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      alert(`An error occurred: ${errorMessage}`);
+    }
   };
+  
 
   return (
     <div className="w-full max-w-md p-10">
@@ -87,6 +114,15 @@ const SignUp = ({ onSignInClick }) => {
           Sign Up
         </button>
       </form>
+      <p className="text-center mt-6">
+        Already have an account?{' '}
+        <button
+          className="text-purple-600 hover:underline"
+          onClick={onSignInClick}
+        >
+          Sign In
+        </button>
+      </p>
     </div>
   );
 };
