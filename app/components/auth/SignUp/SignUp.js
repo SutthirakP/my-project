@@ -114,15 +114,6 @@ const SignUp = ({ onSignInClick = () => {} }) => {
           Sign Up
         </button>
       </form>
-      <p className="text-center mt-6">
-        Already have an account?{' '}
-        <button
-          className="text-purple-600 hover:underline"
-          onClick={onSignInClick}
-        >
-          Sign In
-        </button>
-      </p>
     </div>
   );
 };
