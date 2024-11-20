@@ -10,18 +10,34 @@ const signInSchema = z.object({
 });
 
 const SignIn = ({ onSignUpClick }) => {
-  // React Hook Form setup with Zod validation
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(signInSchema),
   });
 
-  const handleSignInSubmit = (data) => {
-    console.log('Sign In Data:', data);
+  const handleSignInSubmit = async (data) => {
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        const userData = await response.json();
+        localStorage.setItem('user', JSON.stringify(userData)); // เก็บข้อมูลผู้ใช้ลงใน localStorage
+        window.location.href = '/dashboard'; // Redirect ไปยังหน้า Dashboard
+      } else {
+        console.error('Invalid username or password');
+      }
+    } catch (error) {
+      console.error('Error logging in:', error);
+    }
   };
 
   return (
     <form className="w-full max-w-sm space-y-6" onSubmit={handleSubmit(handleSignInSubmit)}>
-      {/* Username Field */}
       <div>
         <label htmlFor="username" className="block text-sm font-medium text-gray-700">
           Username
@@ -37,8 +53,6 @@ const SignIn = ({ onSignUpClick }) => {
           <span className="text-red-600 text-sm">{errors.username.message}</span>
         )}
       </div>
-
-      {/* Password Field */}
       <div>
         <label htmlFor="password" className="block text-sm font-medium text-gray-700">
           Password
@@ -54,8 +68,6 @@ const SignIn = ({ onSignUpClick }) => {
           <span className="text-red-600 text-sm">{errors.password.message}</span>
         )}
       </div>
-
-      {/* Sign In Button */}
       <button
         type="submit"
         className="w-full py-3 bg-purple-600 text-white font-bold rounded-lg hover:bg-purple-500 transition transform hover:scale-105 duration-300"
