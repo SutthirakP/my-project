@@ -1,12 +1,13 @@
-'use client';
+'use client'
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation'; // ใช้เพื่อเปลี่ยนหน้าเมื่อไม่ได้รับอนุญาต
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { User } from '@prisma/client'; // Import type User จาก Prisma Schema
-import { getCurrentUser } from '@/app/utils/auth'; // Import ฟังก์ชัน getCurrentUser ที่คุณสร้างไว้
+import { User } from '@prisma/client';
+import { useRouter } from 'next/navigation';
+import jwt, { JwtPayload } from 'jsonwebtoken';
+import { getCurrentUser } from '@/app/utils/auth';  // ใช้ getCurrentUser เพื่อเช็คการล็อกอิน
 
 const userSchema = z.object({
   username: z.string().min(1, 'Username is required'),
@@ -21,51 +22,64 @@ type FormValues = {
 };
 
 const Dashboard = () => {
-  const router = useRouter(); // ใช้เพื่อเปลี่ยนหน้าเมื่อไม่มีสิทธิ์
-  const [users, setUsers] = useState<User[]>([]); // กำหนด type ของ users ให้เป็น Array ของ User
-  const [currentUser, setCurrentUser] = useState<User | null>(null); // เพิ่ม state สำหรับเก็บข้อมูลผู้ใช้ที่ล็อกอินอยู่
+  const [users, setUsers] = useState<User[]>([]);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const router = useRouter();
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(userSchema),
   });
 
+  // Fetch users from API
+  const fetchUsers = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No token found');
+      }
+      const response = await fetch('/api/admin/users', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`, // เพิ่มการยืนยันสิทธิ์
+        },
+      });
+      if (response.ok) {
+        const data: User[] = await response.json();
+        setUsers(data);
+      } else {
+        console.error('Failed to fetch users');
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
+  
+
   useEffect(() => {
-    // ดึงข้อมูลผู้ใช้ที่ล็อกอิน
     const fetchCurrentUser = async () => {
       try {
-        const user = await getCurrentUser(); // เรียกฟังก์ชัน getCurrentUser เพื่อดึงข้อมูลผู้ใช้
-        if (user?.role !== 'Admin') {
-          // ถ้าไม่ใช่ Admin ให้เปลี่ยนหน้าไปหน้าอื่น
-          router.push('/not-authorized'); // เปลี่ยนไปยังหน้าที่ไม่อนุญาตให้เข้าถึง
+        const token = localStorage.getItem('token');
+        if (!token) {
+          router.push('/signin');
+          return;
+        }
+
+        // Decode JWT เพื่อตรวจสอบ
+        const decoded = jwt.decode(token) as JwtPayload & { role?: string };
+
+        if (decoded && decoded.role === 'Admin') {
+          await fetchUsers(); // เรียกฟังก์ชัน fetchUsers เมื่อผู้ใช้เป็น Admin
         } else {
-          setCurrentUser(user);
+          router.push('/not-authorized');
         }
       } catch (error) {
         console.error('Error fetching current user:', error);
+        router.push('/signin');
       }
     };
 
     fetchCurrentUser();
-
-    // Fetch users list only if currentUser is admin
-    const fetchUsers = async () => {
-      try {
-        const response = await fetch('/api/admin/users');
-        if (response.ok) {
-          const data: User[] = await response.json(); // เพิ่ม type ให้กับ data
-          setUsers(data);
-        } else {
-          console.error('Failed to fetch users');
-        }
-      } catch (error) {
-        console.error('Error fetching users:', error);
-      }
-    };
-
-    if (currentUser?.role === 'Admin') {
-      fetchUsers();
-    }
-  }, [currentUser]);
+  }, [router]);
 
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
     try {
@@ -76,10 +90,10 @@ const Dashboard = () => {
         },
         body: JSON.stringify(data),
       });
-  
+
       if (response.ok) {
         alert('User created successfully');
-        setUsers([...users, data as User]); // อัปเดตข้อมูล user ใหม่ใน state
+        fetchUsers(); // Refresh user list after successful creation
       } else {
         console.error('Failed to create user');
       }
@@ -98,7 +112,7 @@ const Dashboard = () => {
           </div>
         )}
       </div>
-      
+
       <div className="mb-10">
         <h2 className="text-2xl mb-4">Create New User</h2>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
