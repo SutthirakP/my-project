@@ -27,32 +27,28 @@ const SignIn = ({ onSignUpClick }) => {
         },
         body: JSON.stringify(data),
       });
-
+  
       if (!response.ok) {
-        if (response.status === 401) {
-          alert('Invalid username or password. Please try again.');
-        } else {
-          throw new Error('Network response was not ok');
-        }
+        throw new Error('Network response was not ok');
       }
-
+  
       const responseData = await response.json();
       console.log('Sign In successful:', responseData);
-
-      // เก็บข้อมูลผู้ใช้ใน sessionStorage เพื่อให้รู้ว่ามีการล็อกอินแล้ว
-      sessionStorage.setItem('currentUser', JSON.stringify(responseData));
+  
+      // เก็บ Token ไว้ใน localStorage หรือ cookie
+      localStorage.setItem('token', responseData.token);
+  
+      // แจ้งเตือนว่า Login สำเร็จ
+      alert('Login Successful');
       
-      // แจ้งเตือนว่าล็อกอินสำเร็จ
-      alert('Login Successful!');
-
-      // นำทางกลับไปหน้าแรกหรือ Dashboard
-      router.push('/');
-
+      // นำทางไปยังหน้า Dashboard
+      router.push('/dashboard');
     } catch (error) {
       console.error('Error signing in:', error);
       alert('An error occurred during sign-in. Please try again.');
     }
   };
+  
 
   return (
     <form className="w-full max-w-sm space-y-6" onSubmit={handleSubmit(handleSignInSubmit)}>
