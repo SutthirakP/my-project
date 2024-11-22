@@ -1,15 +1,20 @@
+import bcrypt from 'bcrypt';
 import { NextResponse } from 'next/server';
-import { users } from '@/app/utils/mockUsers';
+import prisma from '@/app/utils/db';
 
-export async function POST(req: { json: () => PromiseLike<{ username: any; password: any; }> | { username: any; password: any; }; }) {
-  const { username, password } = await req.json();
+export async function POST(request: Request) {
+  try {
+    const { username, password } = await request.json();
+    const user = await prisma.user.findUnique({
+      where: { username },
+    });
 
-  // ตรวจสอบว่ามีผู้ใช้ที่ตรงกันหรือไม่
-  const user = users.find((u) => u.username === username && u.password === password);
-
-  if (user) {
-    return NextResponse.json({ username: user.username, role: user.role }, { status: 200 });
-  } else {
-    return NextResponse.json({ message: 'Invalid username or password' }, { status: 401 });
+    if (user && await bcrypt.compare(password, user.password)) {
+      return NextResponse.json({ username: user.username, role: user.role });
+    } else {
+      return NextResponse.json({ message: 'Invalid username or password' }, { status: 401 });
+    }
+  } catch (error) {
+    return NextResponse.json({ message: 'Something went wrong', error }, { status: 500 });
   }
 }
