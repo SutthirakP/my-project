@@ -1,26 +1,57 @@
-// api/admin/users/route.ts
+import bcrypt from 'bcrypt';
 import { NextResponse } from 'next/server';
 import prisma from '@/app/utils/db';
+import { checkAuth } from '@/app/action/checkAuth';
+import { validateRequest } from '@/app/action/validateRequest';
 
-// Handle GET request to fetch all users
-export async function GET() {
+// เพิ่มการรองรับ GET Method
+export async function GET(request: Request) {
+  const authResult = await checkAuth(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const users = await prisma.user.findMany();
     return NextResponse.json(users);
   } catch (error) {
-    return NextResponse.json({ error: 'Error fetching users' }, { status: 500 });
+    console.error('Error fetching users:', error);
+    return NextResponse.json({ message: 'Something went wrong' }, { status: 500 });
   }
 }
 
-// Handle POST request to create a new user
 export async function POST(request: Request) {
+  // ตรวจสอบการเข้าถึง
+  const authResult = await checkAuth(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
+  // ตรวจสอบความถูกต้องของข้อมูล
+  const validationResult = await validateRequest(request);
+  if (validationResult instanceof NextResponse) {
+    return validationResult;
+  }
+
+  // ถ้า auth และ validation ผ่าน ให้ทำงานตามปกติ
   try {
-    const data = await request.json();
+    const { username, email, role, password } = await request.json();
+
+    // แฮชรหัสผ่านก่อนที่จะเก็บในฐานข้อมูล
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const newUser = await prisma.user.create({
-      data,
+      data: {
+        username,
+        email,
+        role,
+        password: hashedPassword,
+      },
     });
-    return NextResponse.json(newUser, { status: 201 });
+
+    return NextResponse.json(newUser);
   } catch (error) {
-    return NextResponse.json({ error: 'Error creating user' }, { status: 500 });
+    console.error('Error creating user:', error);
+    return NextResponse.json({ message: 'Something went wrong' }, { status: 500 });
   }
 }
