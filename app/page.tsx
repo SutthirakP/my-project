@@ -1,100 +1,161 @@
+'use client'
+
 import Image from "next/image";
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import jwt from 'jsonwebtoken';
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const router = useRouter();
+  const [currentUser, setCurrentUser] = useState<{ username: string; role: string } | null>(null);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+  useEffect(() => {
+    const getUserDataFromToken = () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const decoded = jwt.decode(token) as { username: string; role: string } | null;
+          if (decoded && decoded.username && decoded.role) {
+            setCurrentUser({ username: decoded.username, role: decoded.role });
+          }
+        } catch (error) {
+          console.error('Invalid token');
+        }
+      }
+    };
+
+    getUserDataFromToken(); // Load user data initially
+
+    // Run getUserDataFromToken whenever the route changes
+    const handleRouteChange = () => {
+      getUserDataFromToken();
+    };
+
+    window.addEventListener('popstate', handleRouteChange);
+    window.addEventListener('pushstate', handleRouteChange);
+
+    // Cleanup when component is unmounted
+    return () => {
+      window.removeEventListener('popstate', handleRouteChange);
+      window.removeEventListener('pushstate', handleRouteChange);
+    };
+  }, [router]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setCurrentUser(null);
+    router.push('/signin');
+  };
+
+  const handleLogin = async (username: string, password: string) => {
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const token = data.token;
+        localStorage.setItem('token', token); // Store the token here
+        setCurrentUser({ username: data.username, role: data.role }); // Set current user
+        router.push('/'); // Redirect to home
+      } else {
+        console.error('Login failed');
+      }
+    } catch (error) {
+      console.error('Error during login:', error instanceof Error ? error.message : String(error));
+    }
+  };
+
+  return (
+    <div className="home-container">
+      <header className="home-header">
+        <nav className="home-nav">
+          <Link href="/" className="brand-logo">
+            Florence Keyboards
+          </Link>
+          <div className="nav-links">
+            <Link href="/portfolio">Portfolio</Link>
+            <Link href="/services">Services</Link>
+            <Link href="/about">About</Link>
+            <Link href="/shop">Shop</Link>
+            <Link href="/journal">Journal</Link>
+            <Link href="/contact">Contact</Link>
+            {currentUser ? (
+              <div className="user-info">
+                <span>{currentUser.username} | {currentUser.role}</span>
+                <button onClick={handleLogout} className="logout-button">Logout</button>
+              </div>
+            ) : (
+              <div className="auth-links">
+                <button onClick={() => router.push('/login')} className="login-button">Login</button>
+                <Link href="/signup">Signup</Link>
+              </div>
+            )}
+          </div>
+        </nav>
+      </header>
+
+      <main className="home-main">
+        <section className="hero-section">
+          <Image
+            className="hero-image"
+            src="/keyboard.jpg"
+            alt="Mechanical Keyboard Image"
+            width={1200}
+            height={800}
+            priority
+          />
+          <div className="hero-text">
+            <h1>Your brand mission statement can be stated here.</h1>
+            <p>This is where you share the heartbeat of your brand. Simple yet effective text that makes your audience feel connected to the message.</p>
+          </div>
+        </section>
+
+        <section className="gallery-section">
+          <div className="gallery-item">
             <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+              src="/keyboard-1.jpg"
+              alt="Custom Keyboard 1"
+              width={600}
+              height={400}
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
+            <p>Keyboard One</p>
+          </div>
+          <div className="gallery-item">
+            <Image
+              src="/keyboard-2.jpg"
+              alt="Custom Keyboard 2"
+              width={600}
+              height={400}
+            />
+            <p>Keyboard Two</p>
+          </div>
+          <div className="gallery-item">
+            <Image
+              src="/keyboard-3.jpg"
+              alt="Custom Keyboard 3"
+              width={600}
+              height={400}
+            />
+            <p>Keyboard Three</p>
+          </div>
+        </section>
       </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+
+      <footer className="home-footer">
+        <div className="footer-content">
+          <p>Florence Keyboards &copy; 2024. All rights reserved.</p>
+          <div className="footer-links">
+            <Link href="/privacy">Privacy Policy</Link>
+            <Link href="/terms">Terms of Service</Link>
+          </div>
+        </div>
       </footer>
     </div>
   );
