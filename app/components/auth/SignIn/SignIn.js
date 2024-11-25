@@ -29,20 +29,19 @@ const SignIn = ({ onSignUpClick }) => {
       });
   
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error('Invalid credentials');
       }
   
       const responseData = await response.json();
-      console.log('Sign In successful:', responseData);
-  
-      // เก็บ Token ไว้ใน localStorage หรือ cookie
       localStorage.setItem('token', responseData.token);
+      localStorage.setItem('username', responseData.username); // เก็บชื่อผู้ใช้
+      localStorage.setItem('role', responseData.role); // เก็บบทบาทผู้ใช้
   
       // แจ้งเตือนว่า Login สำเร็จ
       alert('Login Successful');
       
-      // นำทางไปยังหน้า Dashboard
-      router.push('/dashboard');
+      // นำทางไปยังหน้า Home
+      router.push('/');
     } catch (error) {
       console.error('Error signing in:', error);
       alert('An error occurred during sign-in. Please try again.');
