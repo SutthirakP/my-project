@@ -12,14 +12,10 @@ const LoginPage = () => {
     setIsSignUp(true);
   };
 
-  const handleSignInClick = () => {
-    setIsSignUp(false);
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-gray-100 to-purple-200">
       {/* Card Container */}
-      <div className="flex w-full max-w-4xl shadow-2xl bg-white/90 backdrop-blur-sm overflow-hidden rounded-3xl">
+      <div className="flex w-full max-w-4xl shadow-2xl bg-white/90 backdrop-blur-sm overflow-hidden ?rounded-3xl">
         
         {/* Sign In Section */}
         <div className={`w-1/2 p-10 flex flex-col justify-center transition-transform duration-500 ${isSignUp ? 'translate-x-full opacity-0' : 'opacity-100'}`}>
