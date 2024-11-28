@@ -1,18 +1,16 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-  /* config options here */
-};
-// next.config.js
-module.exports = {
+// next.config.mjs
+const nextConfig = {
   images: {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'images.unsplash.com',
+        hostname: '**', // Allow all hostnames
+        port: '', // No specific port
+        pathname: '/**', // Allow all paths
       },
     ],
   },
-}
+  reactStrictMode: false,
+};
 
 export default nextConfig;
