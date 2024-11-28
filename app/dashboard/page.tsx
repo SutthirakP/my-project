@@ -129,34 +129,63 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchCurrentUser = async () => {
       try {
+        const username = localStorage.getItem('username');
+        const role = localStorage.getItem('role');
         const token = localStorage.getItem('token');
-        if (!token) {
-          router.push('/signin');
+  
+        // If no username or role, redirect to signin
+        if (!username || !role) {
+          setCurrentUser(null);
+          router.push('/');
           return;
         }
-
-        const decoded = jwt.decode(token) as JwtPayload & { role?: string, username?: string, email?: string, id?: number, createdAt?: string };
-
-        if (decoded && decoded.role === 'Admin') {
-          await fetchUsers();
-          fetchProducts(); // Fetch products
-          await fetchVisits(); // Fetch visits data for chart
-          setCurrentUser({
-            id: decoded.id || 0,
-            username: decoded.username || 'Unknown',
-            email: decoded.email || '',
-            role: decoded.role || 'User',
-            createdAt: decoded.createdAt || new Date().toISOString(),
-          });
+  
+        // Set user from localStorage immediately
+        setCurrentUser({
+          id: 0, // Default ID or fetch from the token if available
+          username: username,
+          email: '', // Default email or fetch from the token if available
+          role: role,
+          createdAt: new Date().toISOString(), // Default date or fetch from the token if available
+        });
+  
+        // Optional: Decode token for additional validation
+        if (token) {
+          const decoded = jwt.decode(token) as JwtPayload & {
+            role?: string;
+            username?: string;
+            email?: string;
+            id?: number;
+            createdAt?: string;
+          };
+  
+          if (decoded && decoded.role === 'Admin') {
+            // Fetch additional data only if the user is an Admin
+            await fetchUsers();
+            fetchProducts();
+            await fetchVisits();
+  
+            // Update the current user with additional details from the token
+            setCurrentUser({
+              id: decoded.id || 0,
+              username: decoded.username || username,
+              email: decoded.email || '',
+              role: decoded.role || role,
+              createdAt: decoded.createdAt || new Date().toISOString(),
+            });
+          } else {
+            console.warn('User role is not Admin. Redirecting...');
+            router.push('/not-authorized');
+          }
         } else {
-          router.push('/not-authorized');
+          console.warn('No token found. Proceeding with localStorage data.');
         }
       } catch (error) {
         console.error('Error fetching current user:', error);
-        router.push('/signin');
+        router.push('/signin'); // Redirect on failure
       }
     };
-
+  
     fetchCurrentUser();
   }, [router]);
 
@@ -201,10 +230,10 @@ const Dashboard = () => {
       <aside className="w-20 bg-gray-800 text-white flex flex-col items-center py-5 space-y-8">
         <h2 className="text-2xl font-bold">Base</h2>
         <div className="flex flex-col space-y-6">
-        <Link href="/users" className="text-center flex flex-col items-center">
+        <Link href="dashboard" className="text-center flex flex-col items-center">
           <FaUsers size={24} title="Users" />
           </Link>
-          <Link href="/products" className="text-center flex flex-col items-center">
+          <Link href="dashboard/products" className="text-center flex flex-col items-center">
             <FaShoppingCart size={24} title="Products" />
           </Link>
           <Link href="/blog" className="text-center flex flex-col items-center">
