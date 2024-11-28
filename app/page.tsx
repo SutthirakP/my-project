@@ -4,9 +4,10 @@ import Image from "next/image";
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import jwt from 'jsonwebtoken';
+import LogoutButton from "./components/LogoutButton";
 import BlogSection from "./components/ฺBlogSection";
 import { recordVisit } from "./action/visits";
+
 
 export default function Home() {
   const router = useRouter();
@@ -20,43 +21,37 @@ export default function Home() {
         console.error('Failed to record visit:', error);
       }
     };
-    recordPageVisit();
-
-    const getUserDataFromToken = () => {
-      const token = localStorage.getItem('token');
-      console.log('Retrieved token:', token); // Debug line to check the token
-      if (token) {
-        try {
-          const decoded = jwt.decode(token) as { username: string; role: string } | null;
-          console.log('Decoded token:', decoded); // Debug line to check decoded content
-          if (decoded && decoded.username && decoded.role) {
-            setCurrentUser({ username: decoded.username, role: decoded.role });
-          }
-        } catch (error) {
-          console.error('Invalid token', error);
+  
+    const getUserDataFromSession = async () => {
+      try {
+        const username = localStorage.getItem('username');
+        const role = localStorage.getItem('role');
+  
+        if (username && role) {
+          setCurrentUser({ username, role });
+        } else {
           setCurrentUser(null);
         }
-      } else {
+      } catch (error) {
+        console.error('Error getting session:', error);
         setCurrentUser(null);
       }
     };
-
-    getUserDataFromToken(); // Load user data initially
-
-    // Listen for changes to the token in localStorage
-    const handleStorageChange = () => {
-      getUserDataFromToken();
+  
+    recordPageVisit();
+    getUserDataFromSession();
+  
+    const handleSessionChange = () => {
+      getUserDataFromSession();
     };
-
-    window.addEventListener('storage', handleStorageChange);
-    router.refresh();
-
+  
+    window.addEventListener('sessionChange', handleSessionChange);
+  
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('sessionChange', handleSessionChange);
     };
-    
-  }, [router]);
-
+  }, []);
+  
   const handleLogout = () => {
     localStorage.removeItem('token');
     setCurrentUser(null);
@@ -66,35 +61,36 @@ export default function Home() {
   return (
     <div className="home-container">
       <header className="home-header">
-        <nav className="home-nav">
-          <Link href="/" className="brand-logo">
-            Florence Keyboards
-          </Link>
-          <div className="nav-links">
-            <Link href="/portfolio">Portfolio</Link>
-            <Link href="/services">Services</Link>
-            <Link href="/about">About</Link>
-            <Link href="/shop">Shop</Link>
-            <Link href="/journal">Journal</Link>
-            <Link href="/contact">Contact</Link>
-            {currentUser ? (
-              <div className="user-info">
-                <span>{currentUser.username} | {currentUser.role}</span>
-                <button onClick={handleLogout} className="logout-button">Logout</button>
-              </div>
-            ) : (
-              <div className="auth-links">
-                <Link href="/login">
-                  <button className="login-button">Login</button>
-                </Link>
-                <Link href="/signup">
-                  <button className="signup-button">Sign Up</button>
-                </Link>
-              </div>
-            )}
-          </div>
-        </nav>
-      </header>
+  <nav className="home-nav">
+    {/* Left Logo */}
+    <Link href="/" className="brand-logo">
+      Florence Keyboards
+    </Link>
+
+    {/* Centered Links */}
+    <div className="nav-links">
+      <Link href="/shop">Shop</Link>
+      <Link href="/blog">Blog</Link>
+    </div>
+
+    {/* Right-Aligned User Info */}
+    {currentUser ? (
+      <div className="user-info">
+        <span className="text-sm font-medium text-gray-700">{currentUser.username} | {currentUser.role}</span>
+        <LogoutButton />
+      </div>
+    ) : (
+      <div className="auth-links">
+        <Link href="/login">
+          <button className="login-button">Login |</button>
+        </Link>
+        <Link href="/signup">
+          <button className="signup-button ml-2">Sign Up</button>
+        </Link>
+      </div>
+    )}
+  </nav>
+</header>
 
       <main className="home-main">
         <section className="hero-section">
