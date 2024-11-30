@@ -20,6 +20,9 @@ export default function LogoutButton() {
 
         // Redirect to login page
         router.push('/');
+        
+        // Force page refresh
+        window.location.reload();
       } else {
         console.error('Failed to logout');
       }
@@ -29,7 +32,10 @@ export default function LogoutButton() {
   };
 
   return (
-    <button onClick={handleLogout} className="logout-button">
+    <button
+      onClick={handleLogout}
+      className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+    >
       Logout
     </button>
   );
