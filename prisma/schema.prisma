@@ -25,10 +25,23 @@ model Visit {
 }
 
 model Product {
+  id       Int     @id @default(autoincrement())
+  name     String
+  price    Float
+  likes    Int     @default(0)
+  imageUrl String
+  isNew    Boolean @default(false)
+  category String  @default("Uncategorized")
+  brand    String  @default("Unbrand") // เพิ่มฟิลด์ brand
+  scale    String  @default("Unknown") // เพิ่มฟิลด์ scale
+
+  carts Cart[] @relation("ProductToCart")
+}
+
+model Cart {
   id        Int     @id @default(autoincrement())
-  name      String
-  price     Float
-  likes     Int
-  imageUrl  String
-  isNew     Boolean
+  userId    Int
+  productId Int
+  quantity  Int     @default(1)
+  product   Product @relation("ProductToCart", fields: [productId], references: [id])
 }
