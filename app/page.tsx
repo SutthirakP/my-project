@@ -5,8 +5,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import LogoutButton from "./components/LogoutButton";
-import BlogSection from "./components/ฺBlogSection";
 import { recordVisit } from "./action/visits";
+import Shop from "./components/Shop";
 
 
 export default function Home() {
@@ -67,12 +67,6 @@ export default function Home() {
       Florence Keyboards
     </Link>
 
-    {/* Centered Links */}
-    <div className="nav-links">
-      <Link href="/shop">Shop</Link>
-      <Link href="/blog">Blog</Link>
-    </div>
-
     {/* Right-Aligned User Info */}
     {currentUser ? (
       <div className="user-info">
@@ -107,7 +101,6 @@ export default function Home() {
             <p>This is where you share the heartbeat of your brand. Simple yet effective text that makes your audience feel connected to the message.</p>
           </div>
         </section>
-        <BlogSection />
         <section className="gallery-section">
           <div className="gallery-item">
             <Image
@@ -139,8 +132,12 @@ export default function Home() {
             />
             <p>Keyboard Three</p>
           </div>
+          
+          
         </section>
-
+        <div>
+          <Shop />
+        </div>
       </main>
 
       <footer className="home-footer">
