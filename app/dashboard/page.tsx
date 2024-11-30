@@ -77,25 +77,25 @@ const Dashboard = () => {
     }
   };
 
-  // Fetch products from API (mocked data for now)
-  const fetchProducts = () => {
-    setProducts([
-      {
-        id: '1',
-        name: 'NIKE Shoes Black Pattern',
-        price: 87,
-        rating: 5,
-        image: '/nike-shoes.jpg',
+// Fetch products from Prisma (via API)
+const fetchProducts = async () => {
+  try {
+    const response = await fetch('/api/products?limit=2', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
       },
-      {
-        id: '2',
-        name: 'iPhone 12',
-        price: 987,
-        rating: 4,
-        image: '/iphone-12.jpg',
-      },
-    ]);
-  };
+    });
+    if (response.ok) {
+      const data: Product[] = await response.json();
+      setProducts(data);
+    } else {
+      console.error('Failed to fetch products from Prisma');
+    }
+  } catch (error) {
+    console.error('Error fetching products:', error);
+  }
+};
 
   // Fetch visits data from API
   const fetchVisits = async () => {
@@ -185,7 +185,7 @@ const Dashboard = () => {
         router.push('/signin'); // Redirect on failure
       }
     };
-  
+    
     fetchCurrentUser();
   }, [router]);
 
@@ -235,9 +235,6 @@ const Dashboard = () => {
           </Link>
           <Link href="dashboard/products" className="text-center flex flex-col items-center">
             <FaShoppingCart size={24} title="Products" />
-          </Link>
-          <Link href="/blog" className="text-center flex flex-col items-center">
-            <FaBlogger size={24} title="Blog" />
           </Link>
         </div>
       </aside>
@@ -296,27 +293,28 @@ const Dashboard = () => {
           </div>
 
           {/* Top Selling Products Section */}
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h2 className="text-2xl mb-4 font-semibold text-gray-800">Top Selling Products</h2>
-            <div className="space-y-6">
-              {products.map((product) => (
-                <div key={product.id} className="flex items-center space-x-4">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-16 h-16 rounded-lg object-cover"
-                  />
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-700">{product.name}</h3>
-                    <p className="text-sm text-gray-500">${product.price}</p>
-                    <div className="text-yellow-400">
-                      {'★'.repeat(product.rating)}{'☆'.repeat(5 - product.rating)}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+<div className="bg-white p-6 rounded-lg shadow-md">
+  <h2 className="text-2xl mb-4 font-semibold text-gray-800">Top Selling Products</h2>
+  <div className="space-y-6">
+    {products.map((product) => (
+      <div key={product.id} className="flex items-center space-x-4">
+        <img
+          src={product.image}
+          alt={product.name}
+          className="w-16 h-16 rounded-lg object-cover"
+        />
+        <div>
+          <h3 className="text-lg font-semibold text-gray-700">{product.name}</h3>
+          <p className="text-sm text-gray-500">${product.price}</p>
+          <div className="text-yellow-400">
+            {'★'.repeat(product.rating)}{'☆'.repeat(5 - product.rating)}
           </div>
+        </div>
+      </div>
+    ))}
+  </div>
+</div>
+
         </div>
       </div>
     </div>
