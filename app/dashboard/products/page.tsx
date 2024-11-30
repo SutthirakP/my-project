@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { FaShoppingCart, FaUsers, FaBlog, FaBolt } from "react-icons/fa";
+import Image from "next/image";
 
 type Product = {
   id: number;
@@ -10,6 +11,10 @@ type Product = {
   price: number;
   imageUrl: string;
   likes: number;
+  isNew: boolean;
+  category: string;
+  brand: string;
+  scale: string;
 };
 
 export default function DashboardProducts() {
@@ -18,6 +23,10 @@ export default function DashboardProducts() {
   const [price, setPrice] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [likes, setLikes] = useState("");
+  const [isNew, setIsNew] = useState(false);
+  const [category, setCategory] = useState("");
+  const [brand, setBrand] = useState("");
+  const [scale, setScale] = useState("");
   const [editingProductId, setEditingProductId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -40,7 +49,7 @@ export default function DashboardProducts() {
 
   // Add or Update product
   const handleSaveProduct = async () => {
-    if (!name || !price || !imageUrl || !likes) {
+    if (!name || !price || !imageUrl || !likes || !category || !brand || !scale) {
       alert("Please fill all fields!");
       return;
     }
@@ -50,6 +59,10 @@ export default function DashboardProducts() {
       price: parseFloat(price),
       imageUrl,
       likes: parseInt(likes, 10),
+      isNew,
+      category,
+      brand,
+      scale,
     };
 
     try {
@@ -104,6 +117,10 @@ export default function DashboardProducts() {
     setPrice(String(product.price));
     setImageUrl(product.imageUrl);
     setLikes(String(product.likes));
+    setIsNew(product.isNew);
+    setCategory(product.category);
+    setBrand(product.brand);
+    setScale(product.scale);
     setEditingProductId(product.id);
   };
 
@@ -113,12 +130,26 @@ export default function DashboardProducts() {
     setPrice("");
     setImageUrl("");
     setLikes("");
+    setIsNew(false);
+    setCategory("");
+    setBrand("");
+    setScale("");
     setEditingProductId(null);
   };
 
   useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch('/api/products');
+        const data = await response.json();
+        setProducts(data);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      }
+    };
     fetchProducts();
   }, []);
+
 
   return (
     <div className="flex min-h-screen">
@@ -130,9 +161,6 @@ export default function DashboardProducts() {
         </Link>
         <Link href="/dashboard/products" className="mb-4">
           <FaShoppingCart size={24} title="Products" />
-        </Link>
-        <Link href="/dashboard/blog" className="mb-4">
-          <FaBlog size={24} title="Blog" />
         </Link>
         <div className="mt-auto">
           <button className="bg-gray-700 rounded-full p-3 hover:bg-gray-600">
@@ -178,6 +206,36 @@ export default function DashboardProducts() {
             onChange={(e) => setLikes(e.target.value)}
             className="border rounded p-2 mb-2 w-full"
           />
+          <label>
+            <input
+              type="checkbox"
+              checked={isNew}
+              onChange={(e) => setIsNew(e.target.checked)}
+              className="mr-2"
+            />
+            Is New
+          </label>
+          <input
+            type="text"
+            placeholder="Category"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="border rounded p-2 mb-2 w-full"
+          />
+          <input
+            type="text"
+            placeholder="Brand"
+            value={brand}
+            onChange={(e) => setBrand(e.target.value)}
+            className="border rounded p-2 mb-2 w-full"
+          />
+          <input
+            type="text"
+            placeholder="Scale"
+            value={scale}
+            onChange={(e) => setScale(e.target.value)}
+            className="border rounded p-2 mb-2 w-full"
+          />
           <button
             onClick={handleSaveProduct}
             className="bg-blue-500 text-white px-4 py-2 rounded"
@@ -208,11 +266,15 @@ export default function DashboardProducts() {
               <img
                 src={product.imageUrl}
                 alt={product.name}
-                className="w-full h-48 object-cover rounded"
+                className="w-full h-20 w-20 object-cover rounded"
               />
               <h2 className="font-bold text-lg mt-2">{product.name}</h2>
               <p>Price: ${product.price}</p>
               <p>Likes: {product.likes}</p>
+              <p>Category: {product.category}</p>
+              <p>Brand: {product.brand}</p>
+              <p>Scale: {product.scale}</p>
+              <p>New: {product.isNew ? "Yes" : "No"}</p>
               <div className="flex justify-between mt-4">
                 <button
                   onClick={() => handleEditProduct(product)}

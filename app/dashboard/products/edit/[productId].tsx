@@ -3,88 +3,95 @@ import prisma from "@/app/utils/db";
 
 const STYLE = `border-2 border-black mx-1 p-1 drop-shadow-md rounded-md`;
 
-export default function EditProduct({
-  params,
-}: {
-  params: { productId: string };
-}) {
-  const router = useRouter();
+export default async function EditProduct({ params }: { params: { productId: string } }) {
+  const product = await prisma.product.findUnique({
+    where: { id: Number(params.productId) },
+  });
 
-  async function updateProduct(formData: FormData) {
-    "use server";
-
-    const updatedName = formData.get("name") as string;
-    const updatedPrice = parseFloat(formData.get("price") as string);
-    const updatedImageUrl = formData.get("imageUrl") as string;
-    const updatedLikes = parseInt(formData.get("likes") as string, 10);
-
-    // Update product in the database
-    await prisma.product.update({
-      where: { id: Number(params.productId) },
-      data: {
-        name: updatedName,
-        price: updatedPrice,
-        imageUrl: updatedImageUrl,
-        likes: updatedLikes,
-      },
-    });
-
-    // Redirect back to product dashboard
-    router.push("/dashboard/products");
+  if (!product) {
+    return <div>Product not found</div>;
   }
 
   return (
     <div className="container mx-auto p-6">
       <h1 className="text-2xl font-bold mb-4">Edit Product</h1>
-      <form action={updateProduct}>
-        <div>
-          <label>
-            Name:
-            <input
-              className={STYLE}
-              type="text"
-              name="name"
-              placeholder="Enter Product Name"
-              required
-            />
-          </label>
-        </div>
-        <div>
-          <label>
-            Price:
-            <input
-              className={STYLE}
-              type="number"
-              name="price"
-              placeholder="Enter Product Price"
-              required
-            />
-          </label>
-        </div>
-        <div>
-          <label>
-            Image URL:
-            <input
-              className={STYLE}
-              type="text"
-              name="imageUrl"
-              placeholder="Enter Image URL"
-              required
-            />
-          </label>
-        </div>
-        <div>
-          <label>
-            Likes:
-            <input
-              className={STYLE}
-              type="number"
-              name="likes"
-              placeholder="Enter Number of Likes"
-              required
-            />
-          </label>
-        </div>
+      <form method="POST" action={`/api/products/${params.productId}`}>
+        <label>
+          Name:
+          <input
+            className="border rounded p-2"
+            type="text"
+            name="name"
+            defaultValue={product.name}
+            required
+          />
+        </label>
+        <label>
+          Price:
+          <input
+            className="border rounded p-2"
+            type="number"
+            name="price"
+            defaultValue={product.price}
+            required
+          />
+        </label>
+        <label>
+          Image URL:
+          <input
+            className="border rounded p-2"
+            type="text"
+            name="imageUrl"
+            defaultValue={product.imageUrl}
+            required
+          />
+        </label>
+        <label>
+          Likes:
+          <input
+            className="border rounded p-2"
+            type="number"
+            name="likes"
+            defaultValue={product.likes}
+            required
+          />
+        </label>
+        <label>
+          Is New:
+          <input
+            className="border rounded p-2"
+            type="checkbox"
+            name="isNew"
+            defaultChecked={product.isNew}
+          />
+        </label>
+        <label>
+          Category:
+          <input
+            className="border rounded p-2"
+            type="text"
+            name="category"
+            defaultValue={product.category}
+          />
+        </label>
+        <label>
+          Brand:
+          <input
+            className="border rounded p-2"
+            type="text"
+            name="brand"
+            defaultValue={product.brand}
+          />
+        </label>
+        <label>
+          Scale:
+          <input
+            className="border rounded p-2"
+            type="text"
+            name="scale"
+            defaultValue={product.scale}
+          />
+        </label>
         <button
           type="submit"
           className="bg-blue-500 text-white px-4 py-2 rounded mt-4"
