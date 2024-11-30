@@ -11,6 +11,8 @@ const productSchema = z.object({
   imageUrl: z.string().url('Image URL must be valid'),
   likes: z.number().int().nonnegative('Likes must be non-negative'),
   isNew: z.boolean().optional().default(true),
+  brand: z.string().min(1, 'Brand is required'), // เพิ่มการตรวจสอบ brand
+  scale: z.string().min(1, 'Scale is required'), // เพิ่มการตรวจสอบ scale
 });
 
 // Handle POST and GET requests
@@ -32,10 +34,21 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
-
 export async function GET() {
   try {
-    const products = await prisma.product.findMany();
+    const products = await prisma.product.findMany({
+      select: {
+        id: true,
+        name: true,
+        price: true,
+        imageUrl: true,
+        likes: true,
+        isNew: true,
+        category: true,
+        brand: true, // เพิ่มฟิลด์ brand
+        scale: true, // เพิ่มฟิลด์ scale
+      },
+    });
     return NextResponse.json(products, { status: 200 });
   } catch (error) {
     console.error('Error fetching products:', error);
