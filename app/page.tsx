@@ -67,6 +67,7 @@ export default function Home() {
       Florence Keyboards
     </Link>
 
+
     {/* Right-Aligned User Info */}
     {currentUser ? (
       <div className="user-info">
@@ -87,54 +88,63 @@ export default function Home() {
 </header>
 
       <main className="home-main">
-        <section className="hero-section">
-          <Image
-            className="hero-image rounded-lg"
-            src="https://images.unsplash.com/photo-1612198188060-c7c2a3b66eae?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-            alt="Mechanical Keyboard Image"
-            width={1200}
-            height={800}
-            priority
-          />
-          <div className="hero-text">
+      <section className="hero-section relative w-full h-[60vh] overflow-hidden">
+  <Image
+    className="absolute top-0 left-0 w-full h-full object-cover"
+    src="https://images.unsplash.com/photo-1612198188060-c7c2a3b66eae?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+    alt="Mechanical Keyboard Image"
+    width={1200}
+    height={800}
+    priority
+  />
+          </section>
+          <div className="hero-text text-center">
             <h1>Your brand mission statement can be stated here.</h1>
             <p>This is where you share the heartbeat of your brand. Simple yet effective text that makes your audience feel connected to the message.</p>
           </div>
-        </section>
-        <section className="gallery-section">
-          <div className="gallery-item">
-            <Image
-              className="rounded-lg"
-              src="https://images.unsplash.com/photo-1612600840881-8aba94904ab9?q=80&w=3871&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-              alt="Custom Keyboard 1"
-              width={600}
-              height={400}
-            />
-            <p>Keyboard One</p>
-          </div>
-          <div className="gallery-item">
-            <Image
-              className="rounded-lg"
-              src="https://images.unsplash.com/photo-1636787732775-e0eb5d157b42?q=80&w=3840&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-              alt="Custom Keyboard 2"
-              width={600}
-              height={400}
-            />
-            <p>Keyboard Two</p>
-          </div>
-          <div className="gallery-item">
-            <Image
-              className="rounded-lg"
-              src="https://images.unsplash.com/photo-1634306625640-04ac053e544b?q=80&w=3928&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-              alt="Custom Keyboard 3"
-              width={600}
-              height={400}
-            />
-            <p>Keyboard Three</p>
-          </div>
-          
-          
-        </section>
+
+          <section className="relative bg-gray-100">
+  {/* Hero Section */}
+  <div className="flex flex-col md:flex-row items-center justify-between bg-gray-200 px-8 py-16">
+    {/* Left Content */}
+    <div className="max-w-lg space-y-4">
+      <h2 className="text-lg font-medium text-gray-600">
+        What our customers says
+      </h2>
+      <p className="text-4xl font-bold text-gray-800 leading-tight">
+        Exclusive Collections For Z-Generation
+      </p>
+      <p className="text-gray-600">
+        "I'm impressed by the quality of work and the level."
+      </p>
+      <div className="flex space-x-4 mt-4">
+        <button className="bg-black text-white px-6 py-2 rounded shadow hover:bg-gray-800">
+          Shop Now
+        </button>
+        <button className="border border-gray-800 px-6 py-2 rounded shadow hover:bg-gray-100">
+          Categories
+        </button>
+      </div>
+    </div>
+
+    {/* Right Image */}
+    <div className="relative mt-8 md:mt-0">
+      <img
+        src="https://via.placeholder.com/400x500"
+        alt="Exclusive Collection"
+        className="rounded-lg shadow-md object-cover"
+      />
+      <div className="absolute top-4 right-4 bg-white shadow-lg p-4 rounded-lg">
+        <p className="text-sm text-gray-800">Explore New Arrivals</p>
+        <img
+          src="https://via.placeholder.com/100x100"
+          alt="New Arrival"
+          className="mt-2 rounded-lg"
+        />
+      </div>
+    </div>
+  </div>
+</section>
         <div>
           <Shop />
         </div>
