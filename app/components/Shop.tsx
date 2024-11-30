@@ -23,6 +23,11 @@ export default function Shop() {
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isPaymentStep, setIsPaymentStep] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
+  const [confirmationMessage, setConfirmationMessage] = useState<string | null>(
+    null
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
@@ -110,23 +115,50 @@ export default function Shop() {
       return 0;
     });
 
-  const predefinedBrands = ["Logitech", "Nubwo", "Ducky", "Razer", "Akko"];
-  const predefinedScales = ["60%", "80%", "100%"];
+  const predefinedBrands = Array.from(
+    new Set(products.map((product) => product.brand))
+  );
+  const predefinedScales = Array.from(
+    new Set(products.map((product) => product.scale))
+  );
   const categories = Array.from(
     new Set(products.map((product) => product.category))
   );
 
+
   const calculateTotalPrice = () =>
     cart.reduce((total, item) => total + item.product.price * item.quantity, 0);
+
+  const confirmPayment = () => {
+    if (!paymentMethod) {
+      alert("Please select a payment method.");
+      return;
+    }
+  
+    setTimeout(() => {
+      setConfirmationMessage(
+        `Payment completed successfully using ${paymentMethod}. Thank you for your purchase!`
+      );
+      setCart([]); // Clear cart after successful payment
+      setIsCartOpen(false);
+      setIsPaymentStep(false);
+  
+      // Clear confirmation message after 5 seconds
+      setTimeout(() => {
+        setConfirmationMessage(null);
+      }, 5000);
+    }, 1000);
+  };
+  
 
   const toggleLike = async (productId: number) => {
     try {
       const response = await fetch(`/api/products/${productId}/like`, {
-        method: "POST",
+        method: "POST", // Assuming POST is used for toggling likes
       });
   
       if (response.ok) {
-        const updatedProduct = await response.json();
+        const updatedProduct = await response.json(); // Assuming API returns updated product
         setProducts((prevProducts) =>
           prevProducts.map((product) =>
             product.id === productId
@@ -145,92 +177,6 @@ export default function Shop() {
 
   return (
     <div className="container mx-auto p-6">
-      {/* Cart Button */}
-      {cart.length > 0 && (
-        <div className="fixed top-4 right-4">
-          <button
-            onClick={() => setIsCartOpen(!isCartOpen)}
-            className="relative bg-blue-500 text-white px-4 py-2 rounded-full shadow hover:bg-blue-600"
-          >
-            🛒
-            <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full px-2">
-              {cart.reduce((total, item) => total + item.quantity, 0)}
-            </span>
-          </button>
-        </div>
-      )}
-
-      {/* Cart Modal */}
-      {isCartOpen && (
-        <div className="fixed top-0 right-0 w-1/3 h-full bg-white shadow-lg overflow-y-auto z-50">
-          <div className="p-4 flex flex-col h-full">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl font-bold">Your Cart</h2>
-              <button
-                onClick={() => setIsCartOpen(false)}
-                className="text-gray-500 hover:text-gray-800"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="flex-grow overflow-y-auto">
-              {cart.length === 0 ? (
-                <p>Your cart is empty</p>
-              ) : (
-                cart.map((item) => (
-                  <div
-                    key={item.product.id}
-                    className="flex items-center mb-4 border-b pb-2"
-                  >
-                    <img
-                      src={item.product.imageUrl}
-                      alt={item.product.name}
-                      className="w-16 h-16 object-cover rounded"
-                    />
-                    <div className="flex-1 ml-4">
-                      <h3 className="font-bold">{item.product.name}</h3>
-                      <p>${item.product.price}</p>
-                    </div>
-                    <div className="flex items-center">
-                      <button
-                        onClick={() => decreaseQuantity(item.product.id)}
-                        className="text-gray-500 hover:text-gray-800 px-2"
-                      >
-                        −
-                      </button>
-                      <span className="px-2">{item.quantity}</span>
-                      <button
-                        onClick={() => increaseQuantity(item.product.id)}
-                        className="text-gray-500 hover:text-gray-800 px-2"
-                      >
-                        +
-                      </button>
-                    </div>
-                    <button
-                      onClick={() => removeFromCart(item.product.id)}
-                      className="text-red-500 ml-4"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ))
-              )}
-            </div>
-            <div className="flex justify-between items-center mt-4 border-t pt-4">
-              <span className="text-lg font-bold">
-                Total: ${calculateTotalPrice().toFixed(2)}
-              </span>
-              <button
-                onClick={() => alert("Proceed to buy!")}
-                className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600"
-              >
-                Buy
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       <h1 className="text-3xl font-bold mb-4">Shop</h1>
 
       {/* Search Bar and Sorting */}
@@ -332,64 +278,227 @@ export default function Shop() {
           </ul>
         </div>
 
+        {/* Products */}
         <div className="w-3/4">
-  {loading ? (
-    <p>Loading products...</p>
-  ) : (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      {filteredProducts.map((product) => (
-        <div
-          key={product.id}
-          className="relative border rounded-lg shadow hover:shadow-md transition bg-white flex flex-col justify-between h-full"
-        >
-          {/* Product Image */}
-          <img
-            src={product.imageUrl}
-            alt={product.name}
-            className="w-full h-48 object-cover"
-          />
-
-          {/* Product Info */}
-          <div className="p-4 flex-grow">
-            <h3 className="text-lg font-bold">{product.name}</h3>
-            <p className="text-sm text-gray-600">Brand: {product.brand}</p>
-            <p className="text-sm text-gray-600">Scale: {product.scale}</p>
-            <p className="text-lg font-bold mt-2">${product.price}</p>
-          </div>
-
-          {/* Actions */}
-          <div className="flex justify-between items-center p-4 border-t">
-            <button
-              onClick={() => addToCart(product)}
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-            >
-              Add to Cart
-            </button>
-            <div className="flex items-center">
-              <button
-                onClick={() => toggleLike(product.id)}
-                className={`relative flex items-center justify-center w-8 h-8 rounded-full ${
-                  product.likes > 0 ? "bg-red-500 text-white" : "bg-gray-300 text-gray-600"
-                } hover:scale-110 transition`}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                  className="w-4 h-4"
+          {loading ? (
+            <p>Loading products...</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredProducts.map((product) => (
+                <div
+                  key={product.id}
+                  className="relative border rounded-lg shadow hover:shadow-md transition bg-white flex flex-col justify-between h-full"
                 >
-                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3c2.58 0 5 2.42 5 5.5 0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                </svg>
+                  <img
+                    src={product.imageUrl}
+                    alt={product.name}
+                    className="w-full h-48 object-cover"
+                  />
+
+                   {/* New Badge */}
+  {product.isNew && (
+    <div className="absolute top-2 left-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
+      NEW
+    </div>
+  )}
+
+                  <div className="p-4 flex-grow">
+                    <h3 className="text-lg font-bold">{product.name}</h3>
+                    <p className="text-sm text-gray-600">Brand: {product.brand}</p>
+                    <p className="text-sm text-gray-600">Scale: {product.scale}</p>
+                    <p className="text-lg font-bold mt-2">${product.price}</p>
+                  </div>
+                  <div className="flex justify-between items-center p-4 border-t">
+                    <button
+                      onClick={() => addToCart(product)}
+                      className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                    >
+                      Add to Cart
+                    </button>
+                    <div className="flex items-center">
+                      <button
+                        onClick={() => toggleLike(product.id)}
+                        className={`relative flex items-center justify-center w-8 h-8 rounded-full ${
+                          product.likes > 0
+                            ? "bg-red-500 text-white"
+                            : "bg-gray-300 text-gray-600"
+                        } hover:scale-110 transition`}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="currentColor"
+                          viewBox="0 0 24 24"
+                          className="w-4 h-4"
+                        >
+                          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3c2.58 0 5 2.42 5 5.5 0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                        </svg>
+                      </button>
+                      <span className="ml-2 text-sm text-gray-600">
+                        {product.likes}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Cart Button */}
+      {cart.length > 0 && (
+        <div className="fixed top-4 right-4">
+          <button
+            onClick={() => setIsCartOpen(!isCartOpen)}
+            className="relative bg-blue-500 text-white px-4 py-2 rounded-full shadow hover:bg-blue-600"
+          >
+            🛒
+            <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full px-2">
+              {cart.reduce((total, item) => total + item.quantity, 0)}
+            </span>
+          </button>
+        </div>
+      )}
+
+{/* Cart Modal */}
+{isCartOpen && (
+        <div className="fixed top-0 right-0 w-1/3 h-full bg-white shadow-lg overflow-y-auto z-50">
+          <div className="p-4 flex flex-col h-full">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">
+                {isPaymentStep ? "Payment" : "Your Cart"}
+              </h2>
+              <button
+                onClick={() => {
+                  setIsCartOpen(false);
+                  setIsPaymentStep(false);
+                }}
+                className="text-gray-500 hover:text-gray-800"
+              >
+                ✕
               </button>
-              <span className="ml-2 text-sm text-gray-600">{product.likes}</span>
+            </div>
+
+            <div className="flex-grow overflow-y-auto">
+              {!isPaymentStep ? (
+                cart.map((item) => (
+                  <div
+                    key={item.product.id}
+                    className="flex items-center mb-4 border-b pb-2"
+                  >
+                    <img
+                      src={item.product.imageUrl}
+                      alt={item.product.name}
+                      className="w-16 h-16 object-cover rounded"
+                    />
+                    <div className="flex-1 ml-4">
+                      <h3 className="font-bold">{item.product.name}</h3>
+                      <p>${item.product.price}</p>
+                    </div>
+                    <div className="flex items-center">
+                      <button
+                        onClick={() => decreaseQuantity(item.product.id)}
+                        className="text-gray-500 hover:text-gray-800 px-2"
+                      >
+                        −
+                      </button>
+                      <span className="px-2">{item.quantity}</span>
+                      <button
+                        onClick={() => increaseQuantity(item.product.id)}
+                        className="text-gray-500 hover:text-gray-800 px-2"
+                      >
+                        +
+                      </button>
+                    </div>
+                    <button
+                      onClick={() => removeFromCart(item.product.id)}
+                      className="text-red-500 ml-4"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))
+              ) : (
+                <div>
+                  <h3 className="text-lg font-bold mb-4">
+                    Total: ${calculateTotalPrice().toFixed(2)}
+                  </h3>
+                  <div className="space-y-4">
+                    <label className="block">
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="Credit Card"
+                        onChange={(e) => setPaymentMethod(e.target.value)}
+                        className="mr-2"
+                      />
+                      Credit Card
+                    </label>
+                    <label className="block">
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="PromptPay"
+                        onChange={(e) => setPaymentMethod(e.target.value)}
+                        className="mr-2"
+                      />
+                      PromptPay
+                    </label>
+                    <label className="block">
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="Cash on Delivery"
+                        onChange={(e) => setPaymentMethod(e.target.value)}
+                        className="mr-2"
+                      />
+                      Cash on Delivery
+                    </label>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-between items-center mt-4 border-t pt-4">
+              {!isPaymentStep ? (
+                <>
+                  <span className="text-lg font-bold">
+                    Total: ${calculateTotalPrice().toFixed(2)}
+                  </span>
+                  <button
+                    onClick={() => setIsPaymentStep(true)}
+                    className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600"
+                  >
+                    Proceed to Payment
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => setIsPaymentStep(false)}
+                    className="bg-gray-500 text-white px-4 py-2 rounded"
+                  >
+                    Back to Cart
+                  </button>
+                  <button
+                    onClick={confirmPayment}
+                    className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600"
+                  >
+                    Confirm Payment
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
-      ))}
-    </div>
-  )}
-</div>
-      </div>
+      )}
+
+      {/* Confirmation Message */}
+      {confirmationMessage && (
+        <div className="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded shadow-lg">
+          {confirmationMessage}
+        </div>
+      )}
     </div>
   );
 }
