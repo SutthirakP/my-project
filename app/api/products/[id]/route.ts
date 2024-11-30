@@ -25,6 +25,8 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
       price: body.price,
       imageUrl: body.imageUrl,
       likes: body.likes,
+      isNew: body.isNew,
+      category: body.category,
       brand: body.brand, // เพิ่ม brand
       scale: body.scale, // เพิ่ม scale
     },

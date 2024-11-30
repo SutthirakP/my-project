@@ -34,9 +34,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    const { searchParams } = new URL(req.url);
+    const limit = parseInt(searchParams.get('limit') || '0', 10);
+
     const products = await prisma.product.findMany({
+      take: limit > 0 ? limit : undefined, // ใช้ limit ถ้าระบุ
       select: {
         id: true,
         name: true,
@@ -45,10 +49,11 @@ export async function GET() {
         likes: true,
         isNew: true,
         category: true,
-        brand: true, // เพิ่มฟิลด์ brand
-        scale: true, // เพิ่มฟิลด์ scale
+        brand: true,
+        scale: true,
       },
     });
+
     return NextResponse.json(products, { status: 200 });
   } catch (error) {
     console.error('Error fetching products:', error);
