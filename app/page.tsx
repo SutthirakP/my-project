@@ -1,19 +1,29 @@
 'use client';
 
-import Image from "next/image";
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
 import LogoutButton from "./components/LogoutButton";
 import { recordVisit } from "./action/visits";
 import Shop from "./components/Shop";
-
+import Carousel from "./components/Carousel";
 
 export default function Home() {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<{ username: string; role: string } | null>(null);
+  const [products, setProducts] = useState([]);
 
   useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch('/api/products'); // ดึงข้อมูลสินค้าจาก API
+        const data = await response.json();
+        setProducts(data);
+      } catch (error) {
+        console.error('Failed to fetch products:', error);
+      }
+    };
+
     const recordPageVisit = async () => {
       try {
         await recordVisit();
@@ -21,12 +31,12 @@ export default function Home() {
         console.error('Failed to record visit:', error);
       }
     };
-  
+
     const getUserDataFromSession = async () => {
       try {
         const username = localStorage.getItem('username');
         const role = localStorage.getItem('role');
-  
+
         if (username && role) {
           setCurrentUser({ username, role });
         } else {
@@ -37,21 +47,22 @@ export default function Home() {
         setCurrentUser(null);
       }
     };
-  
+
     recordPageVisit();
+    fetchProducts();
     getUserDataFromSession();
-  
+
     const handleSessionChange = () => {
       getUserDataFromSession();
     };
-  
+
     window.addEventListener('sessionChange', handleSessionChange);
-  
+
     return () => {
       window.removeEventListener('sessionChange', handleSessionChange);
     };
   }, []);
-  
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     setCurrentUser(null);
@@ -61,104 +72,214 @@ export default function Home() {
   return (
     <div className="home-container">
       <header className="home-header">
-  <nav className="home-nav">
-    {/* Left Logo */}
-    <Link href="/" className="brand-logo">
-      Florence Keyboards
-    </Link>
-
-
-    {/* Right-Aligned User Info */}
-    {currentUser ? (
-      <div className="user-info">
-        <span className="text-sm font-medium text-gray-700">{currentUser.username} | {currentUser.role}</span>
-        <LogoutButton />
-      </div>
-    ) : (
-      <div className="auth-links">
-        <Link href="/login">
-          <button className="login-button">Login |</button>
-        </Link>
-        <Link href="/signup">
-          <button className="signup-button ml-2">Sign Up</button>
-        </Link>
-      </div>
-    )}
-  </nav>
-</header>
+      <nav className="home-nav">
+    {/* Logo */}
+    <div className="flex items-center">
+      <Link href="/" className="brand-logo text-2xl font-bold text-white">
+        Florence Keyboards
+      </Link>
+    </div>
+          {/* Right-Aligned User Info */}
+          {currentUser ? (
+            <div className="user-info">
+              <span className="text-m font-medium text-white">
+                {currentUser.username} | {currentUser.role}
+              </span>
+              <LogoutButton />
+            </div>
+          ) : (
+            <div className="auth-links">
+              <Link href="/login">
+                <button className="login-button">Login |</button>
+              </Link>
+              <Link href="/signup">
+                <button className="signup-button ml-2">Sign Up</button>
+              </Link>
+            </div>
+          )}
+        </nav>
+      </header>
 
       <main className="home-main">
-      <section className="hero-section relative w-full h-[60vh] overflow-hidden">
-  <Image
-    className="absolute top-0 left-0 w-full h-full object-cover"
-    src="https://images.unsplash.com/photo-1612198188060-c7c2a3b66eae?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-    alt="Mechanical Keyboard Image"
-    width={1200}
-    height={800}
-    priority
-  />
-          </section>
-          <div className="hero-text text-center">
-            <h1>Your brand mission statement can be stated here.</h1>
-            <p>This is where you share the heartbeat of your brand. Simple yet effective text that makes your audience feel connected to the message.</p>
+  <section className="hero-section bg-gray-100 py-16 px-6 md:px-16 hero-section-bg">
+    <div className="flex flex-col md:flex-row items-center justify-between w-full h-full">
+      {/* Left Content */}
+      <div className="max-w-lg space-y-4 text-center md:text-left border border-gray-300 bg-white bg-opacity-90 p-6 rounded-lg shadow-md">
+        <h2 className="text-lg font-medium text-gray-500">
+          Experience the Ultimate Typing Revolution
+        </h2>
+        <p className="text-4xl font-extrabold text-gray-900 leading-tight">
+          Premium Mechanical Keyboards for All Generations
+        </p>
+        <p className="text-gray-600">
+          "Florence Keyboards offers unparalleled precision and durability in every keystroke. Perfect for gamers, writers, and enthusiasts alike."
+        </p>
+        <div className="flex space-x-4 mt-6 justify-center md:justify-start">
+          <button className="bg-gray-900 text-white px-6 py-3 rounded-lg shadow-lg hover:bg-gray-700 transition-all duration-300">
+            Explore Products
+          </button>
+          <button className="border border-gray-700 text-gray-700 px-6 py-3 rounded-lg shadow-lg hover:bg-gray-200 transition-all duration-300">
+            Learn More
+          </button>
+        </div>
+      </div>
+
+          {/* Right Image */}
+          <div className="relative mt-8 md:mt-0 w-full max-w-sm">
+            <img
+              src="/bg1.jpg"
+              alt="Exclusive Collection"
+              className="rounded-lg shadow-lg object-cover w-full h-auto"
+            />
           </div>
+        </div>
+      </section>
 
-          <section className="relative bg-gray-100">
-  {/* Hero Section */}
-  <div className="flex flex-col md:flex-row items-center justify-between bg-gray-200 px-8 py-16">
-    {/* Left Content */}
-    <div className="max-w-lg space-y-4">
-      <h2 className="text-lg font-medium text-gray-600">
-        What our customers says
-      </h2>
-      <p className="text-4xl font-bold text-gray-800 leading-tight">
-        Exclusive Collections For Z-Generation
-      </p>
-      <p className="text-gray-600">
-        "I'm impressed by the quality of work and the level."
-      </p>
-      <div className="flex space-x-4 mt-4">
-        <button className="bg-black text-white px-6 py-2 rounded shadow hover:bg-gray-800">
-          Shop Now
-        </button>
-        <button className="border border-gray-800 px-6 py-2 rounded shadow hover:bg-gray-100">
-          Categories
-        </button>
-      </div>
-    </div>
-
-    {/* Right Image */}
-    <div className="relative mt-8 md:mt-0">
-      <img
-        src="https://via.placeholder.com/400x500"
-        alt="Exclusive Collection"
-        className="rounded-lg shadow-md object-cover"
-      />
-      <div className="absolute top-4 right-4 bg-white shadow-lg p-4 rounded-lg">
-        <p className="text-sm text-gray-800">Explore New Arrivals</p>
-        <img
-          src="https://via.placeholder.com/100x100"
-          alt="New Arrival"
-          className="mt-2 rounded-lg"
-        />
-      </div>
-    </div>
-  </div>
-</section>
+      {/* Highlight Section */}
+      <hr />
+      <section className="testimonial-section bg-gray-100 py-16">
+        <div className="container mx-auto text-center">
+          <h2 className="text-3xl font-bold text-gray-800 mb-8">
+            Why Choose Florence Keyboards?
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="p-6 bg-white shadow-md rounded-md">
+              <blockquote className="text-gray-600">
+                <span className="text-purple-500 text-4xl font-bold">“</span>
+                At Florence Keyboards, we believe every keystroke matters. That’s why we craft premium mechanical keyboards designed for enthusiasts and professionals alike.
+              </blockquote>
+            </div>
+            <div className="p-6 bg-white shadow-md rounded-md">
+              <blockquote className="text-gray-600">
+                <span className="text-purple-500 text-4xl font-bold">“</span>
+                Discover the perfect blend of design, durability, and precision. Our mechanical keyboards are built to enhance your typing and gaming experience.
+              </blockquote>
+            </div>
+            <div className="p-6 bg-white shadow-md rounded-md">
+              <blockquote className="text-gray-600">
+                <span className="text-purple-500 text-4xl font-bold">“</span>
+                Why settle for less when you can have perfection? Florence Keyboards redefines what a mechanical keyboard should be.
+              </blockquote>
+            </div>
+          </div>
+        </div>
+      </section>
+        <div>
+          <Carousel items={products} />
+        </div>
+        <br />
+        <hr />
         <div>
           <Shop />
         </div>
+        <br />
+        <br />
       </main>
 
-      <footer className="home-footer">
-        <div className="footer-content">
-          <p>Florence Keyboards &copy; 2024. All rights reserved.</p>
-          <div className="footer-links">
-            <Link href="/privacy">Privacy Policy</Link>
-            <Link href="/terms">Terms of Service</Link>
-          </div>
-        </div>
-      </footer>
+      <footer className="home-footer bg-white/90 py-16 text-gray-900">
+  <div className="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
+    {/* Left Section */}
+    <div className="flex-col md:items-center ">
+      <h3 className="text-2xl font-bold mb-4">Florence Keyboards</h3>
+      <p className="text-gray-700 text-sm">
+        Enhancing your typing and gaming experience with premium mechanical keyboards.
+      </p>
+    </div>
+
+    {/* Middle Section */}
+    <div className="flex flex-col items-center md:items-center text-center">
+      <h3 className="text-xl font-bold mb-4">Quick Navigation</h3>
+      <ul className="text-gray-700 space-y-2">
+        <li>
+          <Link href="/" className="hover:text-gray-900">
+            Home
+          </Link>
+        </li>
+        <li>
+          <Link href="/shop" className="hover:text-gray-900">
+            Shop
+          </Link>
+        </li>
+        <li>
+          <Link href="/about" className="hover:text-gray-900">
+            About Us
+          </Link>
+        </li>
+        <li>
+          <Link href="/contact" className="hover:text-gray-900">
+            Contact Us
+          </Link>
+        </li>
+      </ul>
+    </div>
+
+    {/* Right Section */}
+    <div className="flex flex-col items-center md:items-center text-center">
+      <h3 className="text-xl font-bold mb-4">Connect with us</h3>
+      <ul className="text-gray-700 space-y-2">
+        <li className="flex items-center justify-center space-x-2">
+          <img
+            src="/icons/facebook.svg"
+            alt="Facebook"
+            className="w-5 h-5"
+          />
+          <a
+            href="https://facebook.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-gray-900"
+          >
+            Facebook
+          </a>
+        </li>
+        <li className="flex items-center justify-center space-x-2">
+          <img
+            src="/icons/instagram.svg"
+            alt="Instagram"
+            className="w-5 h-5"
+          />
+          <a
+            href="https://instagram.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-gray-900"
+          >
+            Instagram
+          </a>
+        </li>
+        <li className="flex items-center justify-center space-x-2">
+          <img
+            src="/icons/twitter.svg"
+            alt="Twitter"
+            className="w-5 h-5"
+          />
+          <a
+            href="https://twitter.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-gray-900"
+          >
+            Twitter
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  {/* Bottom Section */}
+  <div className="mt-16 border-t border-gray-300 pt-8 text-center">
+    <p className="text-gray-700 text-sm">&copy; 2024 Florence Keyboards. All rights reserved.</p>
+    <div className="mt-4">
+      <Link href="/privacy" className="mr-4 hover:text-gray-900">
+        Privacy Policy
+      </Link>
+      <Link href="/terms" className="hover:text-gray-900">
+        Terms of Service
+      </Link>
+    </div>
+  </div>
+</footer>
+
     </div>
   );
 }
