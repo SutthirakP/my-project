@@ -11,7 +11,8 @@
 
 /* Header and Navigation */
 .home-header {
-  background-color: #f8f8f8;
+  background-color: #1a1a1a; /* พื้นหลังสีดำ */
+  color: #ffffff; /* สีฟอนต์ขาว */
   padding: 20px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
@@ -23,10 +24,11 @@
 }
 
 .brand-logo {
-  font-size: 24px;
+  font-size: 28px; /* ขยายขนาดฟอนต์ */
   font-weight: bold;
   text-decoration: none;
-  color: #333;
+  color: #ffffff; /* สีฟอนต์ขาว */
+  font-family: 'Poppins', sans-serif; /* เพิ่มฟอนต์ Poppins */
 }
 
 .nav-links {
@@ -36,12 +38,15 @@
 
 .nav-links a {
   text-decoration: none;
-  color: #555;
+  color: #ddd; /* สีฟอนต์เทาอ่อน */
   transition: color 0.3s;
+  font-family: 'Roboto', sans-serif; /* ใช้ฟอนต์ Roboto */
+  font-size: 16px;
+  font-weight: 500;
 }
 
 .nav-links a:hover {
-  color: #000;
+  color: #ffffff; /* สีฟอนต์ขาวเมื่อ hover */
 }
 
 .user-info {
@@ -51,31 +56,52 @@
 }
 
 .logout-button {
-  padding: 5px 10px;
-  background-color: #007bff;
+  padding: 5px 15px;
+  background-color: #e63946; /* ปุ่ม logout เป็นสีแดง */
   color: #fff;
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  font-family: 'Roboto', sans-serif; /* ใช้ฟอนต์ Roboto */
   transition: background-color 0.3s;
 }
 
 .logout-button:hover {
-  background-color: #0056b3;
+  background-color: #b71c1c; /* สีแดงเข้มเมื่อ hover */
 }
 
 /* Main Section */
 .home-main {
   flex: 1;
-  padding: 40px;
+  padding: 0px;
 }
 
 .hero-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
+  position: relative;
+  background-color: transparent;
+  padding: 2rem;
 }
+
+.hero-section:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('/bg.png'); /* เปลี่ยน path ของคุณ */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 1; /* ลดความโปร่งใสเฉพาะพื้นหลัง */
+  z-index: -1; /* ส่ง pseudo-element ไปด้านหลัง */
+}
+
+.hero-content {
+  position: relative; /* ทำให้เนื้อหาอยู่ด้านหน้าของพื้นหลัง */
+  z-index: 1;
+}
+
 
 .hero-image {
   max-width: 100%;
@@ -84,7 +110,11 @@
 }
 
 .hero-text {
-  margin-top: 20px;
+  background-color: rgba(255, 255, 255, 0.8); /* พื้นหลังโปร่งแสง */
+  border: 2px solid rgba(0, 0, 0, 0.2); /* กรอบรอบข้อความ */
+  padding: 1rem; /* เว้นระยะรอบข้อความ */
+  border-radius: 10px; /* มุมโค้ง */
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* เงา */
 }
 
 .hero-text h1 {
@@ -117,26 +147,56 @@
 
 /* Footer Section */
 .home-footer {
-  background-color: #333;
-  color: #fff;
-  padding: 20px;
+  background-color: #1a1a1a; /* พื้นหลังสีดำ */
+  color: #ffffff; /* สีฟอนต์ขาว */
+  padding: 40px;
   text-align: center;
 }
 
 .footer-content {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start; /* จัดข้อความให้อยู่ต้นบรรทัด */
   flex-wrap: wrap;
+}
+
+.footer-content div {
+  flex: 1;
+  margin: 10px;
 }
 
 .footer-links a {
   margin-left: 10px;
-  color: #bbb;
+  color: #aaa; /* สีฟอนต์ลิงก์เทาอ่อน */
   text-decoration: none;
+  font-family: 'Roboto', sans-serif; /* ใช้ฟอนต์ Roboto */
   transition: color 0.3s;
 }
 
 .footer-links a:hover {
-  color: #fff;
+  color: #ffffff; /* สีฟอนต์ขาวเมื่อ hover */
+}
+
+/* Footer Headings */
+.home-footer h3 {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #ffffff; /* สีหัวข้อขาว */
+  font-family: 'Poppins', sans-serif; /* ใช้ฟอนต์ Poppins */
+}
+
+/* Footer Text */
+.home-footer p {
+  font-size: 14px;
+  color: #bbb; /* สีฟอนต์เทาอ่อน */
+  font-family: 'Roboto', sans-serif;
+}
+
+/* Footer Links */
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 20px;
 }
